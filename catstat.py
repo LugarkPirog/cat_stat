@@ -16,8 +16,7 @@ class CatToNum(object):
             test - bool. Whether, use cache or not
 
         :return:
-            transformed column
-            cache for test processing
+            transformed data
         """
         if not test:
             for col in columns:
