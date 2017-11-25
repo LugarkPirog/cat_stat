@@ -3,22 +3,28 @@ from collections import defaultdict
 
 
 class CatToNum(object):
-    def __init__(self):
+    """
+    Categorical feature constructor
+    :params:
+        target - name of the target column
+        reg_ - regularization strength
+    """
+    def __init__(self, target, reg_):
         self.dct = {}
-
-    def cat_to_num(self, data, columns, test=False):
+        self.target = target
+        self.reg = reg_
+    
+    def cat_to_num(self, data_, columns, test=False):
         """
         Transform dataframes' categorical columns to numeric
-
         :params:
-            data - a pd.DataFrame to process
-            columns - cols to process
+            data_ - a pd.DataFrame to process
+            columns - list of column names to process
             test - bool. Whether, use cache or not
-
         :return:
-            transformed column
-            cache for test processing
+            transformed pd.DataFrame
         """
+        data = data_.copy()
         if not test:
             for col in columns:
                 data[col] = data[col].astype('str')
@@ -30,14 +36,15 @@ class CatToNum(object):
         return data
 
     def col_to_num(self, data, col):
-        reg = 20  # smoothing coeff
-        y = len(data['target'])
-        mean = data['target'].mean()
+
+        reg = self.reg #smoothing coeff
+        y = len(data[self.target])
+        mean = data[self.target].mean()
         d = defaultdict(lambda: mean)
         for uniq in np.unique(data[col]):
             k = len(data[data[col] == uniq])  # uniq count in col
-            y_ = len(data[data[col] == uniq][data['target'] == 1])  # sum of y for uniq value in col
-            a = (k * y_ / y + data['target'].mean() * reg) / (reg + k)
+            y_ = len(data[data[col] == uniq][data[self.target] == 1])  # sum of y for uniq value in col
+            a = (y_ / y * k + data[self.target].mean() * reg) / (reg + k)
             d[uniq] = a
         data[col] = data[col].apply(lambda x: d[x])
         return data, d
